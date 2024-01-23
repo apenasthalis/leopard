@@ -20,7 +20,7 @@ class CargaHorariaFuncionarioController extends Controller
     public function show(string $id)
     {
         $calcular = new CargaHorariaFuncionario();
-        $resultado = $calcular->HorasPorMes($id, 2024, 1);
+        $resultado = $calcular->HorasPorMes($id, 2023, 10);
         return $resultado;
     }
 

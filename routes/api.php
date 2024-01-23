@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Route;
 //usuario -------->
 Route::get('/usuario', [UsuarioController::class, 'index']);
 Route::post('/usuario', [UsuarioController::class, 'store']);   
-  
-//fucionario ------> 
+    
+//funcionario ------> 
 Route::get('/funcionario', [FuncionarioController::class, 'index']);
 Route::post('/funcionario', [FuncionarioController::class, 'store']);  
 Route::put('/funcionario', [FuncionarioController::class, 'update']);

@@ -5,6 +5,7 @@ namespace App\Models;
 use DateInterval;
 use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\BancoDeHoras;
 use Illuminate\Database\Eloquent\Model;
 
 class CargaHorariaFuncionario extends Model
@@ -29,6 +30,7 @@ class CargaHorariaFuncionario extends Model
 
     public function HorasPorMes($id, $ano, $mes)
     {
+
         $registros = CargaHorariaFuncionario::where('tb_funcionario_cd_funcionario', $id)
             ->whereYear('dt_registro', $ano)
             ->whereMonth('dt_registro', $mes)
@@ -51,6 +53,8 @@ class CargaHorariaFuncionario extends Model
 
             $alternarEntradaSaida = !$alternarEntradaSaida;
         }
+
+        // dd($horarios);
 
         $numRegistros = count($horarios['entradas']);
 
@@ -75,58 +79,67 @@ class CargaHorariaFuncionario extends Model
             $diferencasPorDia[$dataFormatada][] = $diferenca;
         }
 
-        // dd($saida);
-
-        if (empty($diferencasPorDia)) {
-            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $mes, $ano);
-
-            for ($day = 1; $day <= $daysInMonth; $day++) {
-                $dateKey = sprintf('%04d-%02d-%02d', $ano, $mes, $day);
-                $diferencasPorDia[$dateKey][] = new DateInterval('PT0S'); // Adiciona um intervalo de 0 segundos
-            }
-        }
-
-
         $somasPorDiaEmSegundos = [];
 
         foreach ($diferencasPorDia as $data => $diferencas) {
             $totalSegundos = 0;
 
             foreach ($diferencas as $diferenca) {
-                $totalSegundos += $diferenca->s + $diferenca->i * 60 + $diferenca->h * 3600;
+                $totalSegundos += $diferenca->s + ($diferenca->i * 60) + ($diferenca->h * 3600);
             }
 
             $somasPorDiaEmSegundos[$data] = $totalSegundos;
         }
+
+        // dd($somasPorDiaEmSegundos);
 
         function setPositive($value)
         {
             return ($value < 0 ? $value * -1 : $value);
         }
 
-        function segundosParaHoras($totalSegundos)
-        {
-
-            $totalSegundos -= 28800;
-
-            $horas = $totalSegundos / 3600;
-            $minutos = setPositive(($totalSegundos % 3600) / 60);
-            $segundos = setPositive($totalSegundos % 60);
-
-            return sprintf('%02d:%02d:%02d', $horas, $minutos, $segundos);
+        function verifyHours($horas, $minutos, $segundos) {
+            if ($horas <= 0) {
+                $minutos;
+                $segundos = $segundos * (-1);
+            }
         }
 
-        $somasPorDiaEmHoras = [];
+        function segundosParaMinutos($totalSegundos)
+        {
+            $totalSegundos -= 28800;
+            $horas = $totalSegundos / 3600;
+            $minutos = ($totalSegundos % 3600) / 60;
+            $segundos = $totalSegundos % 60;
+            $formattedTime = sprintf('%02d:%02d:%02d', $horas, $minutos, $segundos);
+            return ['totalSegundos' => $totalSegundos, 'formattedTime' => $formattedTime];
+        }
+
+        $somasPorDiaEmMinutos = [];
+        $totalSegundosGlobal = 0;
 
         foreach ($somasPorDiaEmSegundos as $data => $totalSegundos) {
-            $somasPorDiaEmHoras[$data] = segundosParaHoras($totalSegundos);
+            $result = segundosParaMinutos($totalSegundos);
+            $somasPorDiaEmMinutos[$data] = $result['formattedTime'];
+            $totalSegundosGlobal += $result['totalSegundos'];
         }
+        
+        $horasTotais = $totalSegundosGlobal / 3600;
+        $minutosTotais = ($totalSegundosGlobal % 3600) / 60;
+        $segundosRestantes = $totalSegundosGlobal % 60;
+        $resultadoFinal = sprintf('%02d:%02d:%02d', $horasTotais, $minutosTotais, $segundosRestantes);
 
-        dd($somasPorDiaEmHoras);
 
-    }
+        dd($somasPorDiaEmMinutos);
+        // BancoDeHoras::updateOrCreate([
+        //     'nu_mes' => $mes,
+        //     'horas' => $resultadoFinal,
+        //     'horastosegundos' =>$totalSegundosGlobal ,
+        //     'cd_funcionario' => $id,
+        //     'nu_ano' => $ano
+        // ]);
 }
-
+}
 
 
     

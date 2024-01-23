@@ -17,7 +17,6 @@ class BancoDeHoras extends Model
 
 
     protected $fillable = [
-        'cd_banco_horas',
         'nu_mes',
         'horas',
         'horastosegundos',
@@ -25,6 +24,13 @@ class BancoDeHoras extends Model
         'nu_ano'
     ];
  
-
     
 }
+
+// BancoDeHoras::updateOrCreate([
+//          'nu_mes' => $mes,
+//          'horas' => $somasPorDiaEmHoras,
+//          'horastosegundos' => $somasPorDiaEmSegundos,
+//          'cd_funcionario' => $id,
+//          'nu_ano' => $ano
+//      ]);
