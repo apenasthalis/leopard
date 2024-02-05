@@ -38,7 +38,7 @@ class CargaHorariaFuncionario extends Model
             ->orderBy('ts_registro')
             ->get();
 
-        $horarios = ['entradas' => [], 'saidas' => []];
+        // $horarios = ['entradas' => [], 'saidas' => []];
         $alternarEntradaSaida = true;
 
         foreach ($registros as $registro) {
@@ -46,39 +46,43 @@ class CargaHorariaFuncionario extends Model
             $hora = $registro->ts_registro;
 
             if ($alternarEntradaSaida) {
-                $horarios['entradas'][] = ['data' => $data, 'hora' => $hora];
+                $horarios[$data][] = ['data' => $data, 'hora' => $hora, 'tipo' => 'entrada'];
             } else {
-                $horarios['saidas'][] = ['data' => $data, 'hora' => $hora];
+                $horarios[$data][] = ['data' => $data, 'hora' => $hora, 'tipo' => 'saida'];
             }
 
             $alternarEntradaSaida = !$alternarEntradaSaida;
         }
 
-        // dd($horarios);
 
-        $numRegistros = count($horarios['entradas']);
+        // $numRegistros = count($horarios[$data]);
 
         $diferencasPorDia = [];
-        for ($i = 0; $i < $numRegistros; $i++) {
+        foreach ($horarios as $data => $eventos) {
+            $numEventos = count($eventos);
+            // $numEventos = 30;
 
-            $entrada = $horarios['entradas'][$i];
-            $saida = $horarios['saidas'][$i];
+            for ($i = 0; $i < $numEventos; $i += 2) {
+                if (isset($eventos[$i]) && isset($eventos[$i + 1])) {
+                    $entrada = $eventos[$i];
+                    $saida = $eventos[$i + 1];
 
-            $dataEntrada = $entrada['data'];
-            $horaEntrada = $entrada['hora'];
+                    $dataEntrada = $entrada['data'];
+                    $horaEntrada = $entrada['hora'];
 
-            $dataSaida = $saida['data'];
-            $horaSaida = $saida['hora'];
+                    $dataSaida = $saida['data'];
+                    $horaSaida = $saida['hora'];
 
-            $inicio = new DateTime("$dataEntrada $horaEntrada");
-            $fim = new DateTime("$dataSaida $horaSaida");
+                    $inicio = new DateTime("$dataEntrada $horaEntrada");
+                    $fim = new DateTime("$dataSaida $horaSaida");
 
-            $diferenca = $inicio->diff($fim);
+                    $diferenca = $inicio->diff($fim);
 
-            $dataFormatada = $inicio->format('Y-m-d');
-            $diferencasPorDia[$dataFormatada][] = $diferenca;
+                    $dataFormatada = $inicio->format('Y-m-d');
+                    $diferencasPorDia[$dataFormatada][] = $diferenca;
+                }
+            }
         }
-
         $somasPorDiaEmSegundos = [];
 
         foreach ($diferencasPorDia as $data => $diferencas) {
@@ -91,20 +95,6 @@ class CargaHorariaFuncionario extends Model
             $somasPorDiaEmSegundos[$data] = $totalSegundos;
         }
 
-        // dd($somasPorDiaEmSegundos);
-
-        function setPositive($value)
-        {
-            return ($value < 0 ? $value * -1 : $value);
-        }
-
-        function verifyHours($horas, $minutos, $segundos) {
-            if ($horas <= 0) {
-                $minutos;
-                $segundos = $segundos * (-1);
-            }
-        }
-
         function segundosParaMinutos($totalSegundos)
         {
             $totalSegundos -= 28800;
@@ -114,6 +104,18 @@ class CargaHorariaFuncionario extends Model
             $formattedTime = sprintf('%02d:%02d:%02d', $horas, $minutos, $segundos);
             return ['totalSegundos' => $totalSegundos, 'formattedTime' => $formattedTime];
         }
+
+        $horas_por_dia = [];
+
+        foreach ($somasPorDiaEmSegundos as $dia => $segundos) {
+            $horas = $segundos / 3600; 
+            $minutos = ($segundos % 3600) / 60; 
+            $segundosRestantes = $segundos % 60; 
+
+            $horas_por_dia[$dia] = sprintf('%02d:%02d:%02d', $horas, $minutos, $segundosRestantes);
+        }
+
+        // dd($horas_por_dia);
 
         $somasPorDiaEmMinutos = [];
         $totalSegundosGlobal = 0;
@@ -129,8 +131,12 @@ class CargaHorariaFuncionario extends Model
         $segundosRestantes = $totalSegundosGlobal % 60;
         $resultadoFinal = sprintf('%02d:%02d:%02d', $horasTotais, $minutosTotais, $segundosRestantes);
 
+        // dd($somasPorDiaEmMinutos); 
 
-        dd($somasPorDiaEmMinutos);
+        $horarioString = json_encode($horarios);
+        return ['resultado' => $resultadoFinal, 'horarios' => $horarioString, 'segundos' => $horas_por_dia];
+        // return[$resultadoFinal, $horarioString]
+
         // BancoDeHoras::updateOrCreate([
         //     'nu_mes' => $mes,
         //     'horas' => $resultadoFinal,

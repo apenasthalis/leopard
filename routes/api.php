@@ -6,16 +6,26 @@ use App\Http\Controllers\DailyController;
 use App\Http\Controllers\FeriadoController;
 use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\JustificativaController;
+use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UsuarioController;
+use App\Models\Usuario;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
 
-//usuario -------->
-Route::get('/usuario', [UsuarioController::class, 'index']);
-Route::post('/usuario', [UsuarioController::class, 'store']);   
+
+
+Route::middleware('jwt.auth')->group(function(){
+
+    Route::get('/usuario', [UsuarioController::class, 'index']);
+});
+ 
+
+
+//login -------->
+Route::post('/login', [LoginController::class, 'logar']);   
+
+
     
 //funcionario ------> 
 Route::get('/funcionario', [FuncionarioController::class, 'index']);
@@ -52,7 +62,7 @@ Route::get('/cargahorariafuncionario/{id}', [CargaHorariaFuncionarioController::
 
 
 //admin 
-
+ 
 
 
 Route::get('/', function(){
@@ -60,3 +70,22 @@ Route::get('/', function(){
         'sucess' => true
     ]);
 });
+
+
+
+
+// $boAdm = false;
+// $chaveSecreta = 'segredosegredosegredosegredosegredosegredosegredo';
+// $agora = time();
+// $tokenPayload = [
+//     'iss' => 'http://localhost/',  // Emissor
+//     'aud' => 'http://localhost/',  // Público permitido
+//     'iat' => $agora,                // Emitido em
+//     'nbf' => $agora + 60,           // Não antes de
+//     'exp' => $agora + 3600,         // Expira em 1 hora
+//     'isAdmin' => $boAdm,
+// ];
+
+// $token = JWT::encode($tokenPayload, $chaveSecreta, 'HS256');
+
+// return $token;

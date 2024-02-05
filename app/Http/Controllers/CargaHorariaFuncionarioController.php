@@ -15,12 +15,13 @@ class CargaHorariaFuncionarioController extends Controller
 
     public function store(Request $request)
     {
+        CargaHorariaFuncionario::create($request->all());
     }
 
     public function show(string $id)
     {
         $calcular = new CargaHorariaFuncionario();
-        $resultado = $calcular->HorasPorMes($id, 2023, 10);
+        $resultado = $calcular->HorasPorMes($id, 2023, 12);
         return $resultado;
     }
 
