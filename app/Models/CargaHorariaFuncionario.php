@@ -40,11 +40,13 @@ class CargaHorariaFuncionario extends Model
 
         // $horarios = ['entradas' => [], 'saidas' => []];
         $alternarEntradaSaida = true;
+        $horarios = [];
 
         foreach ($registros as $registro) {
             $data = $registro->dt_registro;
             $hora = $registro->ts_registro;
 
+            // Adicione o registro à respectiva entrada ou saída
             if ($alternarEntradaSaida) {
                 $horarios[$data][] = ['data' => $data, 'hora' => $hora, 'tipo' => 'entrada'];
             } else {
@@ -54,11 +56,41 @@ class CargaHorariaFuncionario extends Model
             $alternarEntradaSaida = !$alternarEntradaSaida;
         }
 
+       
 
-        // $numRegistros = count($horarios[$data]);
+        foreach ($horarios as $data => $registrosDia){
+            $numI = count($registrosDia);
 
+            if ($numI == 1) {
+
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+
+            }
+
+                if($numI == 2){
+
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+
+                }
+
+            if ($numI == 3) {
+
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+
+            } 
+
+
+            $horariosNovos[$data] = $registrosDia;
+
+        }
+
+
+    
         $diferencasPorDia = [];
-        foreach ($horarios as $data => $eventos) {
+        foreach ($horariosNovos as $data => $eventos) {
             $numEventos = count($eventos);
             // $numEventos = 30;
 
@@ -115,7 +147,6 @@ class CargaHorariaFuncionario extends Model
             $horas_por_dia[$dia] = sprintf('%02d:%02d:%02d', $horas, $minutos, $segundosRestantes);
         }
 
-        // dd($horas_por_dia);
 
         $somasPorDiaEmMinutos = [];
         $totalSegundosGlobal = 0;
@@ -131,11 +162,9 @@ class CargaHorariaFuncionario extends Model
         $segundosRestantes = $totalSegundosGlobal % 60;
         $resultadoFinal = sprintf('%02d:%02d:%02d', $horasTotais, $minutosTotais, $segundosRestantes);
 
-        // dd($somasPorDiaEmMinutos); 
 
-        $horarioString = json_encode($horarios);
+        $horarioString = json_encode($horariosNovos);
         return ['resultado' => $resultadoFinal, 'horarios' => $horarioString, 'segundos' => $horas_por_dia];
-        // return[$resultadoFinal, $horarioString]
 
         // BancoDeHoras::updateOrCreate([
         //     'nu_mes' => $mes,

@@ -19,6 +19,7 @@ class DailyController extends Controller
 
     public function show(string $id)
     {
+        return Daily::where('id_employee', $id)->get();
     }
 
 

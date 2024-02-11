@@ -15,13 +15,27 @@ class CargaHorariaFuncionarioController extends Controller
 
     public function store(Request $request)
     {
-        CargaHorariaFuncionario::create($request->all());
+        $data = $request->all();
+        dd($data);
+
+        $dt_registro = isset($data['dt_registro']) ? $data['dt_registro'] : null;
+        $ts_registro = isset($data['ts_registro']) ? $data['ts_registro'] : null;
+
+        $cargaHoraria = new CargaHorariaFuncionario([
+            'dt_registro' => $dt_registro,
+            'ts_registro' => $ts_registro,
+            'tb_funcionario_cd_funcionario' => $data['tb_funcionario_cd_funcionario'],
+        ]);
+
+        $cargaHoraria->save();
+
+        return response()->json(['message' => 'Dados criados com sucesso']);
     }
 
-    public function show(string $id)
+    public function show( $id, $ano, $mes)
     {
         $calcular = new CargaHorariaFuncionario();
-        $resultado = $calcular->HorasPorMes($id, 2023, 12);
+        $resultado = $calcular->HorasPorMes($id, $ano, $mes);
         return $resultado;
     }
 

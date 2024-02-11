@@ -8,8 +8,6 @@ use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\JustificativaController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UsuarioController;
-use App\Models\Usuario;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
@@ -52,13 +50,14 @@ Route::put('/bancodehoras', [BancoDeHorasController::class, 'update']);
  
 //daily ----------> 
 Route::get('/daily', [DailyController::class, 'index']);
+Route::get('/daily/{id}', [DailyController::class, 'show']);
 Route::post('/daily', [DailyController::class, 'store']);
    
 //carga horaria funcionario
 Route::get('/cargahorariafuncionario', [CargaHorariaFuncionarioController::class, 'index']);
 Route::post('/cargahorariafuncionario', [CargaHorariaFuncionarioController::class, 'store']);
 Route::put('/cargahorariafuncionario', [CargaHorariaFuncionarioController::class, 'update']);
-Route::get('/cargahorariafuncionario/{id}', [CargaHorariaFuncionarioController::class, 'show']);
+Route::get('/cargahorariafuncionario/{id}/{ano}/{mes}', [CargaHorariaFuncionarioController::class, 'show']);
 
 
 //admin 

@@ -10,10 +10,13 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Token\Builder;
 use DateTimeImmutable;
-use Lcobucci\Clock\FrozenClock;
-use Lcobucci\Clock\SystemClock;
-use Lcobucci\JWT\JwtFacade;
-use Lcobucci\JWT\Validation\Constraint;
+use Lcobucci\JWT\Token\Parser;
+use Lcobucci\JWT\Validation\Constraint\IdentifiedBy;
+use Lcobucci\JWT\Validation\Constraint\IssuedBy;
+use Lcobucci\JWT\Validation\Constraint\PermittedFor;
+use Lcobucci\JWT\Validation\Constraint\RelatedTo;
+use Lcobucci\JWT\Validation\Validator;
+
 class LoginController extends Controller
 {
 
@@ -21,7 +24,7 @@ class LoginController extends Controller
     {
 
 
-
+       
         $usuario = Usuario::where('login', $request['login'])
             ->first();
 
@@ -41,15 +44,17 @@ class LoginController extends Controller
             return response(['message' => 'Errou!!!!'], 401);
         }
 
-        $tokenCriado = $this->createToken();
-        // $tokenValidado = $this->validateToken($tokenCriado);
+        $tokenCriado = $this->createToken($usuario->cd_funcionario); 
+
+        $tokenValidado = $this->validarToken($tokenCriado);
         return response([
-            'token' => $tokenCriado,
+            'token' => $tokenValidado,
+            'user_id' => $usuario->cd_funcionario,
             'message' => 'Login realizado com sucesso',
         ], 200);
     }
 
-    public static function createToken()
+    public static function createToken($userId)
     {
         $tokenBuilder = new Builder(new JoseEncoder(), ChainedFormatter::default());
         $algorithm = new Sha256();
@@ -62,33 +67,36 @@ class LoginController extends Controller
             ->issuedAt($now)
             ->canOnlyBeUsedAfter($now->modify('+1 minute'))
             ->expiresAt($now->modify('+1 hour'))
+            ->withClaim('user_id', $userId)
             ->withHeader('foo', 'bar')
             ->getToken($algorithm, $signingKey);
         return $token->toString();
     }
 
-    // public function validateToken($tokenString)
-    // {
-    //     $jwt = $tokenString;
-    //     $now = new DateTimeImmutable();
+    public function validarToken($tokenString)
+    {
+        try {
+            $parser = new Parser(new JoseEncoder());
+            $token = $parser->parse($tokenString);
 
-    //     $key = InMemory::base64Encoded(
-    //         'segredosegredosegredosegredosegredosegredosegredo'
-    //     );
+            $validator = new Validator();
 
-    //     $token = (new JwtFacade())->parse(
-    //         $jwt,
-    //         new Constraint\SignedWith(new Sha256(), $key),
-    //         new Constraint\StrictValidAt(new FrozenClock($now)));
+            $constraints = [
+                new IdentifiedBy('4f1g23a12aa'),  
+                new IssuedBy('http://127.0.0.1:8000/'),  
+                new PermittedFor('http://127.0.0.1:8000/'),  
+            ];
 
+            foreach ($constraints as $constraint) {
+                if (!$validator->validate($token, $constraint)) {
+                    throw new \Exception('Token invalid: ' . get_class($constraint));
+                }
+            }
 
-    //     if ($token->claims()->get('exp') < $now->getTimestamp()) {
-    //         // Token expirou
-    //         return ['error' => 'Token expirado.'];
-    //     } else {
-    //         // Token é válido
-    //         return $token->claims()->all();
-    //     }
+            return $tokenString;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
 
-    // }
 }
