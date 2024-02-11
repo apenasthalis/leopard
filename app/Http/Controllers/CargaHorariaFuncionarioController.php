@@ -16,7 +16,6 @@ class CargaHorariaFuncionarioController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        dd($data);
 
         $dt_registro = isset($data['dt_registro']) ? $data['dt_registro'] : null;
         $ts_registro = isset($data['ts_registro']) ? $data['ts_registro'] : null;
