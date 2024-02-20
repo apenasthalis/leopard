@@ -11,12 +11,14 @@ class Justificativa extends Model
 
     protected $table = 'tb_justificativa';
     public $timestamps = false;
+    protected $primaryKey = 'cd_funcionario';
 
 
 
     protected $fillable = [
         'cd_justificativa',
         'dt_registro',
+        'ts_registro',        
         'cd_funcionario',
         'ds_justificativa',
         'img',

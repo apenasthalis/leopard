@@ -9,7 +9,16 @@ class FuncionarioController extends Controller
 {
     public function index()
     {
-        return Funcionario::all();
+        $usuarios = Funcionario::where('bo_ativo', 1)->get();
+
+        // $nomes =[];
+
+        // foreach ($usuarios as $usuario){
+        //     $nomes[] = $usuario->no_funcionario;
+        // }
+
+
+        return $usuarios;
 
     }
 
@@ -27,7 +36,13 @@ class FuncionarioController extends Controller
     {
     }
 
-    public function destroy(string $id)
+    public function destroy($id)
     {
+        $usuario = Funcionario::where('cd_funcionario', $id)->first();
+
+        $usuario->update(['bo_ativo' => 0]);
+
+        return $usuario;
     }
+
 }

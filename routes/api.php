@@ -15,9 +15,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('jwt.auth')->group(function(){
 
-    Route::get('/usuario', [UsuarioController::class, 'index']);
 });
- 
+
+Route::get('/usuario', [UsuarioController::class, 'index']);
+Route::delete('/usuario', [UsuarioController::class, 'destroy']);
+
 
 
 //login -------->
@@ -28,8 +30,7 @@ Route::post('/login', [LoginController::class, 'logar']);
 //funcionario ------> 
 Route::get('/funcionario', [FuncionarioController::class, 'index']);
 Route::post('/funcionario', [FuncionarioController::class, 'store']);  
-Route::put('/funcionario', [FuncionarioController::class, 'update']);
-Route::delete('/funcionario', [FuncionarioController::class, 'destroy']);
+Route::put('/funcionario/{id}', [FuncionarioController::class, 'destroy']);
 
 //justificativa ---->
 Route::get('/justificativa', [JustificativaController::class, 'index']);

@@ -12,6 +12,7 @@ class Funcionario extends Model
 
     protected $table = 'tb_funcionario';
     public $timestamps = false;
+    protected $primaryKey = 'cd_funcionario';
 
     
     protected $fillable = [

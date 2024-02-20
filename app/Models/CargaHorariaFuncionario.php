@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BancoDeHoras;
 use Illuminate\Database\Eloquent\Model;
 
+use function Laravel\Prompts\error;
+
 class CargaHorariaFuncionario extends Model
 {
     use HasFactory;
@@ -46,7 +48,6 @@ class CargaHorariaFuncionario extends Model
             $data = $registro->dt_registro;
             $hora = $registro->ts_registro;
 
-            // Adicione o registro à respectiva entrada ou saída
             if ($alternarEntradaSaida) {
                 $horarios[$data][] = ['data' => $data, 'hora' => $hora, 'tipo' => 'entrada'];
             } else {
@@ -56,6 +57,7 @@ class CargaHorariaFuncionario extends Model
             $alternarEntradaSaida = !$alternarEntradaSaida;
         }
 
+
        
 
         foreach ($horarios as $data => $registrosDia){
@@ -63,31 +65,30 @@ class CargaHorariaFuncionario extends Model
 
             if ($numI == 1) {
 
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'saida'];
                 $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
-                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
-                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'saida'];
 
             }
 
                 if($numI == 2){
 
                 $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
-                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'saida'];
 
                 }
 
             if ($numI == 3) {
 
-                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'saida'];
 
             } 
 
+           
 
             $horariosNovos[$data] = $registrosDia;
 
         }
-
-
     
         $diferencasPorDia = [];
         foreach ($horariosNovos as $data => $eventos) {

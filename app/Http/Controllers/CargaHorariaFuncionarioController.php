@@ -15,23 +15,15 @@ class CargaHorariaFuncionarioController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->all();
-
-        $dt_registro = isset($data['dt_registro']) ? $data['dt_registro'] : null;
-        $ts_registro = isset($data['ts_registro']) ? $data['ts_registro'] : null;
-
-        $cargaHoraria = new CargaHorariaFuncionario([
-            'dt_registro' => $dt_registro,
-            'ts_registro' => $ts_registro,
-            'tb_funcionario_cd_funcionario' => $data['tb_funcionario_cd_funcionario'],
+        CargaHorariaFuncionario::Create([
+            'dt_registro' => $request->data,
+            'ts_registro' => $request->horario,
+            'tb_funcionario_cd_funcionario' => $request->id,
+            // 'img' =>$request->imagem,
         ]);
-
-        $cargaHoraria->save();
-
-        return response()->json(['message' => 'Dados criados com sucesso']);
     }
 
-    public function show( $id, $ano, $mes)
+    public function show($id, $ano, $mes)
     {
         $calcular = new CargaHorariaFuncionario();
         $resultado = $calcular->HorasPorMes($id, $ano, $mes);
@@ -43,36 +35,83 @@ class CargaHorariaFuncionarioController extends Controller
     {
     }
 
-    public function destroy(string $id)
+    public function falta(Request $request)
     {
+        $data1 = $request['dt_registro'];
+        $id = $request['cd_funcionario'];
+
+
+        $registros = CargaHorariaFuncionario::where('tb_funcionario_cd_funcionario', $id)
+            ->where('dt_registro', $data1)
+            ->get();
+
+        $alternarEntradaSaida = true;
+        $horarios = [];
+
+        foreach ($registros as $registro) {
+            $data = $registro->dt_registro;
+            $hora = $registro->ts_registro;
+
+            if ($alternarEntradaSaida) {
+                $horarios[$data][] = ['data' => $data, 'hora' => $hora, 'tipo' => 'entrada'];
+            } else {
+                $horarios[$data][] = ['data' => $data, 'hora' => $hora, 'tipo' => 'saida'];
+            }
+
+            $alternarEntradaSaida = !$alternarEntradaSaida;
+        }
+
+        $horariosNovos = []; 
+
+        foreach ($horarios as $data => $registrosDia) {
+            $numI = count($registrosDia);
+
+            if ($numI == 1) {
+
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+            }
+
+            if ($numI == 2) {
+
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+            }
+
+            if ($numI == 3) {
+
+                $registrosDia[] = ['data' => $data, 'hora' => '00:00:00', 'tipo' => 'entrada'];
+            }
+
+            $horariosNovos[$data] = $registrosDia;
+        }
+
+        foreach ($horariosNovos as $data => $registrosDia) {
+            $registrosDia[0] = ['data' => $data, 'hora' => '08:00:00', 'tipo' => 'entrada'];
+            $registrosDia[1] = ['data' => $data, 'hora' => '12:00:00', 'tipo' => 'saída'];
+            $registrosDia[2] = ['data' => $data, 'hora' => '14:00:00', 'tipo' => 'entrada'];
+            $registrosDia[3] = ['data' => $data, 'hora' => '18:00:00', 'tipo' => 'saída'];
+
+            $horariosNovos[$data] = $registrosDia;
+        }
+
+
+
+        // Deleta os registros antigos do mesmo dia
+        CargaHorariaFuncionario::where('tb_funcionario_cd_funcionario', $request->cd_funcionario)
+        ->whereDate('dt_registro', $data1)
+        ->delete();
+
+
+        foreach ($horariosNovos as $horariosDia) {
+            foreach ($horariosDia as $horario) {
+                CargaHorariaFuncionario::create([
+                    'dt_registro' => $horario['data'],
+                    'ts_registro' => $horario['hora'],
+                    'tb_funcionario_cd_funcionario' => $request->cd_funcionario,
+                ]);
+            }
     }
 }
-// $somasPorDiaEmSegundos = [];
-
-//         foreach ($diferencasPorDia as $data => $diferencas) {
-//             $totalSegundos = 0;
-
-//             foreach ($diferencas as $diferenca) {
-//                 $totalSegundos += $diferenca->s + $diferenca->i * 60 + $diferenca->h * 3600;
-//             }
-
-//             $somasPorDiaEmSegundos[$data] = $totalSegundos;
-//         }
-
-//         dd($);
-
-
-
-
-  // $somasPorDia = [];
-
-        // foreach ($diferencasPorDia as $data => $diferencas) {
-        //     $soma = new DateTime('00:00:00'); 
-
-        //     foreach ($diferencas as $diferenca) {
-        //         $soma->add($diferenca);
-        //     }
-
-        //     $somasPorDia[$data] = $soma->format('H:i:s');
-        // }
-        // dd($somasPorDia);
+}
