@@ -57,6 +57,7 @@ class JustificativaController extends Controller
     public function update(Request $request){
         $operacao = $request->operacao;
         $data = $request->dt_registro;
+        $horario = $request->ts_registro;
         $id = $request->cd_funcionario;
 
 
@@ -67,19 +68,20 @@ class JustificativaController extends Controller
 
         if ($usuarios) {
                 if ($operacao == "aceitar") {
-                    $usuarios->update(['bo_aceito' => 1]);
-
-
-                $calcular = new CargaHorariaFuncionarioController();
-                $resultado = $calcular->falta($request);
+                    
+                    
+                    $calcular = new CargaHorariaFuncionarioController();
+                    $resultado = $calcular->falta($request);
+                $usuarios->where('dt_registro', $data)
+                    ->where('ts_registro', $horario)
+                    ->update(['bo_aceito' => 1]);
                 return $resultado;
     
-                } 
-                
-                if ($operacao == "rejeitar") {
-                    $usuarios->update(['bo_aceito' => 0]);
                 }
-            
+
+            $usuarios->where('dt_registro', $data)
+            ->where('ts_registro', $horario)
+            ->update(['bo_aceito' => 0]);
 
         }
 

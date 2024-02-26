@@ -31,7 +31,6 @@ class Usuario extends Model
     public static function areCredentialsinvalid($usuario, $senha)
     {
         try {
-            //code...
             $hash1 = md5($senha);
             // $hash = password_verify($senha, $usuario['senha']);
             if ($hash1 === $usuario['senha']) {

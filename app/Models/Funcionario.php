@@ -20,14 +20,15 @@ class Funcionario extends Model
         'no_funcionario',
         'nu_cpf',
         'tb_grade_cd_grade',
-        'tb_carga_horaria_cd_cargahoraria',
+        'tb_cargahoraria_cd_cargahoraria',
         'vl_salario',
         'ds_endereco',
         'ponto_apartir_mes',
         'bo_ativo',
         'ponto_apartir_ano', 
         'dt_demissao',
-        'dt_admissao'
+        'dt_admissao',
+        'imagem_path'
     ];
 
 }

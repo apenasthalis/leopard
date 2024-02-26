@@ -9,9 +9,7 @@ use App\Http\Controllers\JustificativaController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
-
-
-
+use Illuminate\Support\Facades\Storage;
 
 Route::middleware('jwt.auth')->group(function(){
 
@@ -23,12 +21,21 @@ Route::delete('/usuario', [UsuarioController::class, 'destroy']);
 
 
 //login -------->
-Route::post('/login', [LoginController::class, 'logar']);   
+Route::post('/login', [LoginController::class, 'logar']);
 
+Route::get('/storage/{caminho}', function ($caminho) {
+    $path = storage_path("app/public/{$caminho}");
 
+    if (!Storage::exists("public/{$caminho}")) {
+        abort(404);
+    }
+
+    return response()->file($path);
+})->where('caminho', '.*');
     
 //funcionario ------> 
 Route::get('/funcionario', [FuncionarioController::class, 'index']);
+Route::get('/funcionario/{id}', [FuncionarioController::class, 'show']);
 Route::post('/funcionario', [FuncionarioController::class, 'store']);  
 Route::put('/funcionario/{id}', [FuncionarioController::class, 'destroy']);
 
@@ -48,6 +55,8 @@ Route::delete('/feriado', [FeriadoController::class, 'destroy']);
 Route::get('/bancodehoras', [BancoDeHorasController::class, 'index']);
 Route::post('/bancodehoras', [BancoDeHorasController::class, 'store']);
 Route::put('/bancodehoras', [BancoDeHorasController::class, 'update']);
+Route::get('/bancodehoras/{id}', [BancoDeHorasController::class, 'show']);
+
  
 //daily ----------> 
 Route::get('/daily', [DailyController::class, 'index']);

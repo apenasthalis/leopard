@@ -116,6 +116,8 @@ class CargaHorariaFuncionario extends Model
                 }
             }
         }
+
+
         $somasPorDiaEmSegundos = [];
 
         foreach ($diferencasPorDia as $data => $diferencas) {
@@ -140,12 +142,14 @@ class CargaHorariaFuncionario extends Model
 
         $horas_por_dia = [];
 
-        foreach ($somasPorDiaEmSegundos as $dia => $segundos) {
-            $horas = $segundos / 3600; 
-            $minutos = ($segundos % 3600) / 60; 
-            $segundosRestantes = $segundos % 60; 
+        foreach ($somasPorDiaEmSegundos as $dia => $segundos1) {
 
-            $horas_por_dia[$dia] = sprintf('%02d:%02d:%02d', $horas, $minutos, $segundosRestantes);
+
+                $horas = $segundos1 / 3600;
+                $minutos = ($segundos1 % 3600) / 60;
+                $segundosRestantes = $segundos1 % 60;
+
+                $horas_por_dia[$dia] = sprintf('%02d:%02d:%02d', $horas, $minutos, $segundosRestantes);
         }
 
 
@@ -164,16 +168,22 @@ class CargaHorariaFuncionario extends Model
         $resultadoFinal = sprintf('%02d:%02d:%02d', $horasTotais, $minutosTotais, $segundosRestantes);
 
 
-        $horarioString = json_encode($horariosNovos);
-        return ['resultado' => $resultadoFinal, 'horarios' => $horarioString, 'segundos' => $horas_por_dia];
 
-        // BancoDeHoras::updateOrCreate([
-        //     'nu_mes' => $mes,
-        //     'horas' => $resultadoFinal,
-        //     'horastosegundos' =>$totalSegundosGlobal ,
-        //     'cd_funcionario' => $id,
-        //     'nu_ano' => $ano
-        // ]);
+        BancoDeHoras::updateOrInsert(
+            [
+                'nu_mes' => $mes,
+                'cd_funcionario' => $id,
+                'nu_ano' => $ano
+            ],
+            [
+                'horas' => $resultadoFinal,
+                'horastosegundos' => $totalSegundosGlobal
+            ]
+        );
+
+
+        $horarioString = json_encode($horariosNovos);
+        return ['resultado' => $resultadoFinal, 'horarios' => $horarioString, 'segundos' => $somasPorDiaEmSegundos];
 }
 }
 
